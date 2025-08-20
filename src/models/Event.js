@@ -6,7 +6,7 @@ const EventSchema = new mongoose.Schema(
     typeKey: { type: String, required: true, index: true },
     kind: {
       type: String,
-      enum: ["system", "custom"],
+      enum: ["system", "auth", "billing", "validation", "support", "query"],
       required: true,
       index: true,
     },

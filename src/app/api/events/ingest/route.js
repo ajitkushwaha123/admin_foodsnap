@@ -37,17 +37,23 @@ export async function POST(req) {
     if (!typeKey) {
       return NextResponse.json({ error: "typeKey required" }, { status: 400 });
     }
-    if (!kind || !["system", "custom"].includes(kind)) {
-      return NextResponse.json({ error: "kind must be 'system' or 'custom'" }, { status: 400 });
+    if (
+      !kind ||
+      !["system", "auth", "billing", "validation", "support", "query"].includes(
+        kind
+      )
+    ) {
+      return NextResponse.json(
+        { error: "kind must be 'system' or 'custom' ." },
+        { status: 400 }
+      );
     }
 
-    // Ensure event type exists (for safety)
     const et = await EventType.findOne({ key: typeKey, isActive: true }).lean();
     if (!et) {
       return NextResponse.json({ error: `Unknown or inactive event type: ${typeKey}` }, { status: 400 });
     }
-
-    // Build idempotencyKey if not provided (hash of type+user+timestamp+metadata signature)
+    
     const idem = idempotencyKey || crypto
       .createHash("sha256")
       .update(
