@@ -1,24 +1,30 @@
-import { AppSidebar } from "@/components/app-sidebar"
-import { ChartAreaInteractive } from "@/components/chart-area-interactive"
-import { DataTable } from "@/components/data-table"
-import { SectionCards } from "@/components/section-cards"
-import { SiteHeader } from "@/components/site-header"
-import {
-  SidebarInset,
-  SidebarProvider,
-} from "@/components/ui/sidebar"
-
-import data from "./data.json"
+"use client";
+import React, { useEffect } from "react";
+import { AppSidebar } from "@/components/app-sidebar";
+import { ChartAreaInteractive } from "@/components/chart-area-interactive";
+import { DataTable } from "@/components/data-table";
+import { SectionCards } from "@/components/section-cards";
+import { SiteHeader } from "@/components/site-header";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { useEvents } from "@/store/hooks/useEvents";
+import EventTable from "@/components/global/table/event-table";
 
 export default function Page() {
+  const { events, loading, error, getEvents } = useEvents();
+
+  useEffect(() => {
+    getEvents();
+  }, []);
+
+  console.log("Events:", events);
+
   return (
-    (<SidebarProvider
-      style={
-        {
-          "--sidebar-width": "calc(var(--spacing) * 72)",
-          "--header-height": "calc(var(--spacing) * 12)"
-        }
-      }>
+    <SidebarProvider
+      style={{
+        "--sidebar-width": "calc(var(--spacing) * 72)",
+        "--header-height": "calc(var(--spacing) * 12)",
+      }}
+    >
       <AppSidebar variant="inset" />
       <SidebarInset>
         <SiteHeader />
@@ -29,11 +35,11 @@ export default function Page() {
               <div className="px-4 lg:px-6">
                 <ChartAreaInteractive />
               </div>
-              <DataTable data={data} />
+              {events.length > 0 && <DataTable data={events} />}
             </div>
           </div>
         </div>
       </SidebarInset>
-    </SidebarProvider>)
+    </SidebarProvider>
   );
 }

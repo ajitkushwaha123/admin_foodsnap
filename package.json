@@ -2,6 +2,7 @@
   "name": "admin_foodsnap",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -35,6 +36,7 @@
     "axios": "^1.11.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "crypto": "^1.0.1",
     "formik": "^2.4.6",
     "framer-motion": "^12.23.12",
     "fuse.js": "^7.1.0",

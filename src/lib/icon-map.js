@@ -26,7 +26,6 @@ import {
   IconInbox,
   IconRadio,
   IconFileText,
-  IconSliders,
   IconCreditCard,
   IconUsersGroup,
 } from "@tabler/icons-react";
@@ -58,7 +57,6 @@ export const iconMap = {
   Inbox: IconInbox,
   Radio: IconRadio,
   FileText: IconFileText,
-  Sliders: IconSliders,
   CreditCard: IconCreditCard,
   UsersGroup: IconUsersGroup,
 };
