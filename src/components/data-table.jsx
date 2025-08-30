@@ -9,8 +9,6 @@ import {
   TouchSensor,
   useSensor,
   useSensors,
-  DragEndEvent,
-  UniqueIdentifier,
 } from "@dnd-kit/core";
 import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
 import {
@@ -19,7 +17,6 @@ import {
   useSortable,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
-import { motion } from "motion";
 import { CSS } from "@dnd-kit/utilities";
 import {
   IconChevronDown,
@@ -33,11 +30,8 @@ import {
   IconLayoutColumns,
   IconLoader,
   IconPlus,
-  IconTrendingUp,
 } from "@tabler/icons-react";
 import {
-  ColumnDef,
-  ColumnFiltersState,
   flexRender,
   getCoreRowModel,
   getFacetedRowModel,
@@ -45,24 +39,13 @@ import {
   getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
-  Row,
-  SortingState,
   useReactTable,
-  VisibilityState,
 } from "@tanstack/react-table";
-import { Area, AreaChart, CartesianGrid, XAxis } from "recharts";
-import { toast } from "sonner";
 import { z } from "zod";
 
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  ChartConfig,
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-} from "@/components/ui/chart";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Drawer,
@@ -82,7 +65,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -103,31 +85,26 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ChevronDown, ChevronUp } from "lucide-react";
 
-export const eventSchema = z.object({
-  idempotencyKey: z.string(),
-  __v: z.number(),
-  anonymousId: z.string().nullable(),
-  context: z.object({
-    url: z.string(),
+export const userSchema = z.object({
+  phone: z.string(),
+  password: z.string(),
+  credits: z.number(),
+  isAdmin: z.boolean(),
+  subscription: z.object({
+    isActive: z.boolean(),
+    expiresAt: z.string().nullable(),
+    plan: z.enum(["free", "basic", "pro"]).default("free"),
   }),
-  kind: z.enum(["custom", "system"]),
-  metadata: z.object({
-    productId: z.string(),
-    action: z.string(),
-  }),
-  occurredAt: z.object({
+  totalSearches: z.number(),
+  totalImagesDownloaded: z.number(),
+  searchHistory: z.array(z.any()),
+  createdAt: z.object({
     $date: z.string(),
   }),
-  sessionId: z.string(),
-  severity: z.enum(["low", "medium", "high"]),
-  source: z.string(),
-  status: z.enum(["success", "failed", "pending"]),
-  tenantId: z.string(),
-  typeKey: z.string(),
   updatedAt: z.object({
     $date: z.string(),
   }),
-  userId: z.string(),
+  __v: z.number(),
 });
 
 function DragHandle({ id }) {
@@ -150,11 +127,6 @@ function DragHandle({ id }) {
 }
 
 const columns = [
-  {
-    id: "drag",
-    header: () => null,
-    cell: ({ row }) => <DragHandle id={row.original._id} />,
-  },
   {
     id: "select",
     header: ({ table }) => (
@@ -182,85 +154,96 @@ const columns = [
     enableHiding: false,
   },
   {
-    accessorKey: "header",
-    header: "Events",
-    cell: ({ row }) => {
-      return <TableCellViewer event={row.original} />;
-    },
-    enableHiding: false,
+    accessorKey: "id",
+    header: "S.No.",
+    cell: ({ row }) => <span>{row.index + 1}.</span>,
   },
   {
-    accessorKey: "typeKey",
-    header: "Event Type",
+    accessorKey: "phone",
+    header: "Phone",
+    cell: ({ row }) => <span>{row.original.phone}</span>,
+  },
+  {
+    accessorKey: "credits",
+    header: "Credits",
     cell: ({ row }) => (
-      <Badge variant="outline" className="text-muted-foreground px-2">
-        {row.original.typeKey}
+      <Badge variant="outline" className="px-2">
+        {row.original.credits}
       </Badge>
     ),
   },
   {
-    accessorKey: "kind",
-    header: "Kind",
-    cell: ({ row }) => <span>{row.original.kind}</span>,
+    accessorKey: "isAdmin",
+    header: "Role",
+    cell: ({ row }) =>
+      row.original.isAdmin ? (
+        <Badge variant="outline" className="px-2 text-green-600">
+          Admin
+        </Badge>
+      ) : (
+        <Badge variant="outline" className="px-2 text-gray-500">
+          User
+        </Badge>
+      ),
   },
   {
-    accessorKey: "status",
-    header: "Status",
+    accessorKey: "subscription",
+    header: "Subscription",
     cell: ({ row }) => (
-      <Badge variant="outline" className="text-muted-foreground px-2">
-        {row.original.status === "success" ? (
-          <IconCircleCheckFilled className="fill-green-500 dark:fill-green-400 mr-1" />
-        ) : (
-          <IconLoader className="mr-1 animate-spin" />
-        )}
-        {row.original.status}
-      </Badge>
-    ),
-  },
-  {
-    accessorKey: "source",
-    header: "Source",
-    cell: ({ row }) => <span>{row.original.source}</span>,
-  },
-  {
-    accessorKey: "userId",
-    header: "User ID",
-    cell: ({ row }) => (
-      <span>{row.original.userId || row.original.anonymousId}</span>
-    ),
-  },
-  {
-    accessorKey: "sessionId",
-    header: "Session ID",
-    cell: ({ row }) => <span>{row.original.sessionId}</span>,
-  },
-  {
-    accessorKey: "metadata",
-    header: "Metadata",
-    cell: ({ row }) => (
-      <div className="truncate max-w-xs">
-        {JSON.stringify(row.original.metadata)}
+      <div className="flex flex-col">
+        <span className="font-medium">{row.original.subscription.plan}</span>
+        <span className="text-xs text-muted-foreground">
+          {row.original.subscription.isActive ? "Active" : "Inactive"}
+        </span>
       </div>
     ),
   },
   {
-    accessorKey: "occurredAt",
-    header: "Occurred At",
+    accessorKey: "totalSearches",
+    header: "Searches",
+    cell: ({ row }) => <span>{row.original.totalSearches}</span>,
+  },
+  {
+    accessorKey: "totalImagesDownloaded",
+    header: "Downloads",
+    cell: ({ row }) => <span>{row.original.totalImagesDownloaded}</span>,
+  },
+  {
+    accessorKey: "createdAt",
+    header: "Created At",
     cell: ({ row }) => (
-      console.log(row.original),
-      (
-        <span>
-          {row?.original?.occurredAt
-            ? new Date(row.original.occurredAt).toLocaleString("en-IN", {
-                month: "short",
-                day: "numeric",
-                hour: "2-digit",
-                minute: "2-digit",
-                second: "2-digit",
-              })
-            : "—"}
-        </span>
-      )
+      <span>
+        {row.original.createdAt
+          ? new Date(
+              row.original.createdAt.$date || row.original.createdAt
+            ).toLocaleString("en-IN", {
+              month: "short",
+              day: "numeric",
+              year: "numeric",
+              hour: "2-digit",
+              minute: "2-digit",
+            })
+          : "—"}
+      </span>
+    ),
+  },
+  {
+    accessorKey: "updatedAt",
+    header: "Updated At",
+    cell: ({ row }) => (
+      <span>
+        {row.original.updatedAt
+          ? new Date(
+              row.original.updatedAt.$date || row.original.updatedAt
+            ).toLocaleString("en-IN", {
+              month: "short",
+              day: "numeric",
+              year: "numeric",
+              hour: "2-digit",
+              minute: "2-digit",
+            })
+          : "—"}
+      </span>
     ),
   },
   {
@@ -278,9 +261,8 @@ const columns = [
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-32">
+          <DropdownMenuItem>View</DropdownMenuItem>
           <DropdownMenuItem>Edit</DropdownMenuItem>
-          <DropdownMenuItem>Make a copy</DropdownMenuItem>
-          <DropdownMenuItem>Favorite</DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem variant="destructive">Delete</DropdownMenuItem>
         </DropdownMenuContent>

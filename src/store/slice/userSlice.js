@@ -51,12 +51,24 @@ export const logoutUser = createAsyncThunk(
   }
 );
 
-// Initial state
+export const fetchAllUsers = createAsyncThunk(
+  "user/fetchAll",
+  async (_, { rejectWithValue }) => {
+    try {
+      const res = await axios.get("/api/users");
+      return res.data.data;
+    } catch (err) {
+      return rejectWithValue("Failed to fetch users");
+    }
+  }
+);
+
 const initialState = {
   user: null,
   loading: false,
   error: null,
   isAuthenticated: false,
+  users: [],
 };
 
 const userSlice = createSlice({
@@ -125,6 +137,17 @@ const userSlice = createSlice({
         state.loading = false;
       })
       .addCase(logoutUser.rejected, (state, action) => {
+        state.error = action.payload;
+        state.loading = false;
+      })
+      .addCase(fetchAllUsers.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(fetchAllUsers.fulfilled, (state, action) => {
+        state.users = action.payload;
+        state.loading = false;
+      })
+      .addCase(fetchAllUsers.rejected, (state, action) => {
         state.error = action.payload;
         state.loading = false;
       });

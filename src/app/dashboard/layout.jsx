@@ -8,7 +8,7 @@ import { SiteHeader } from "@/components/site-header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { useUser } from "@/store/hooks/useUser";
 
-export default function Page() {
+export default function layout({ children }) {
   const { users, loading, error, getAllUser } = useUser();
 
   useEffect(() => {
@@ -18,14 +18,21 @@ export default function Page() {
   console.log("Users:", users);
 
   return (
-    <div>
-      <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
-        <SectionCards />
-        <div className="px-4 lg:px-6">
-          <ChartAreaInteractive />
+    <SidebarProvider
+      style={{
+        "--sidebar-width": "calc(var(--spacing) * 72)",
+        "--header-height": "calc(var(--spacing) * 12)",
+      }}
+    >
+      <AppSidebar variant="inset" />
+      <SidebarInset>
+        <SiteHeader />
+        <div className="flex flex-1 flex-col">
+          <div className="@container/main flex flex-1 flex-col gap-2">
+           {children}
+          </div>
         </div>
-        {users.length > 0 && <DataTable data={users} />}
-      </div>
-    </div>
+      </SidebarInset>
+    </SidebarProvider>
   );
 }

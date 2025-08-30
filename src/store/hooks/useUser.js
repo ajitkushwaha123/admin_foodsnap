@@ -8,11 +8,12 @@ import {
   clearError,
   resetUser,
   registerUser,
+  fetchAllUsers,
 } from "../slice/userSlice";
 
 export const useUser = () => {
   const dispatch = useDispatch();
-  const { user, loading, isAuthenticated, error } = useSelector(
+  const { user, loading, isAuthenticated, error, users } = useSelector(
     (state) => state.user
   );
 
@@ -22,6 +23,7 @@ export const useUser = () => {
   const fetchUser = () => dispatch(loadUser()).unwrap();
   const clearUserError = () => dispatch(clearError()).unwrap();
   const reset = () => dispatch(resetUser()).unwrap();
+  const getAllUser = () => dispatch(fetchAllUsers()).unwrap();
 
   return {
     user,
@@ -34,5 +36,7 @@ export const useUser = () => {
     fetchUser,
     clearUserError,
     reset,
+    getAllUser,
+    users,
   };
 };
