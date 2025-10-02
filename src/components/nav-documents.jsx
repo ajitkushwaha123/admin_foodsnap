@@ -25,7 +25,7 @@ export function NavDocuments({
   const { isMobile } = useSidebar()
 
   return (
-    (<SidebarGroup className="group-data-[collapsible=icon]:hidden">
+    <SidebarGroup className="group-data-[collapsible=icon]:hidden">
       <SidebarGroupLabel>Documents</SidebarGroupLabel>
       <SidebarMenu>
         {items.map((item) => (
@@ -71,6 +71,6 @@ export function NavDocuments({
           </SidebarMenuButton>
         </SidebarMenuItem>
       </SidebarMenu>
-    </SidebarGroup>)
+    </SidebarGroup>
   );
 }

@@ -14,7 +14,7 @@ export function NavSecondary({
   ...props
 }) {
   return (
-    (<SidebarGroup {...props}>
+    <SidebarGroup {...props}>
       <SidebarGroupContent>
         <SidebarMenu>
           {items.map((item) => (
@@ -29,6 +29,6 @@ export function NavSecondary({
           ))}
         </SidebarMenu>
       </SidebarGroupContent>
-    </SidebarGroup>)
+    </SidebarGroup>
   );
 }
